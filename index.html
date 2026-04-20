@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Инструмент БВР MAXAM</title>
+  <style>
+    :root{--bg:#f3f6f8;--card:#fff;--text:#1f2937;--muted:#6b7280;--line:#d7dde3;--accent:#0f766e;--accent2:#115e59;--soft:#eefbf8;--blue:#eff6ff;--warn:#fff7ed}
+    *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.45}
+    .wrap{max-width:1320px;margin:0 auto;padding:14px}.layout{display:grid;grid-template-columns:minmax(320px,380px) 1fr;gap:14px;align-items:start}
+    .panel,.main{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.04)} .panel{padding:16px;position:sticky;top:12px}.main{padding:16px}
+    h1,h2,h3{margin:0 0 12px 0}.sub{color:var(--muted);font-size:14px;margin-bottom:16px}.section{margin-top:18px;padding-top:16px;border-top:1px solid #e8edf2}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}label{font-size:13px;font-weight:700}
+    input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px;background:#fff;color:#111827} textarea{min-height:76px;resize:vertical}
+    input:focus,select:focus,textarea:focus{outline:2px solid rgba(15,118,110,.18);border-color:var(--accent)}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.btn{border:0;border-radius:12px;padding:13px 14px;font-size:15px;font-weight:700;cursor:pointer;min-height:46px}.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}.btn-secondary{background:#e5e7eb;color:#111827}
+    .info,.hint,.warn{padding:12px 14px;border-radius:12px;font-size:14px;margin-top:14px}.info{background:var(--soft);border:1px solid #cae9e2}.hint{background:var(--blue);border:1px solid #bfdbfe;color:#1e3a8a}.warn{background:var(--warn);border:1px solid #fed7aa;color:#9a3412}
+    .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:16px 0}.metric{background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:12px}.metric .k{font-size:12px;color:#475569}.metric .v{font-size:22px;font-weight:700;margin-top:4px;color:#0f172a}
+    .report{white-space:pre-wrap;background:#ffffff;color:#111827;border:2px solid #94a3b8;border-radius:12px;padding:16px;min-height:340px;font-family:"Courier New",monospace;font-size:14px;line-height:1.55}
+    .topbar{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px;font-weight:700}
+    .scenario-list{display:grid;gap:10px;margin-top:14px}.scenario{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}.scenario h4{margin:0 0 6px 0;font-size:14px}.scenario p{margin:0;color:var(--muted);font-size:13px}.scenario .row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}.scenario .mini-btn{border:0;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:700;cursor:pointer;background:#e5e7eb;min-height:40px}
+    .print-only{display:none}
+    @media (max-width: 980px){.layout{grid-template-columns:1fr}.panel{position:static}}
+    @media (max-width: 640px){body{font-size:15px}.wrap{padding:8px}.panel,.main{border-radius:14px;padding:12px}.grid{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr;gap:10px}.metric{padding:10px}.metric .v{font-size:18px}.report{font-size:13px;padding:12px;min-height:260px;overflow-wrap:anywhere}.topbar{display:block}.badge{margin-top:8px}.scenario .row{grid-template-columns:1fr}.sub{font-size:13px}}
+    @media print{body{background:#fff}.wrap{max-width:none;padding:0}.layout{display:block}.panel,.actions,.scenario-block,.info,.hint,.warn,.sub,.screen-only{display:none!important}.main{border:0;box-shadow:none;padding:0}.report{border:0;background:#fff;padding:0;color:#000}.print-only{display:block;margin-bottom:18px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="layout">
+    <aside class="panel">
+      <h1>Инструмент БВР MAXAM</h1>
+      <div class="sub">Мини-приложение для проектирования массового взрыва с расчетом, сценариями и печатным отчетом.</div>
+      <div class="badge">Целевая фрагментация X80 ≤ 200 мм</div>
+
+      <div class="section">
+        <h3>Исходные данные</h3>
+        <div class="grid">
+          <div class="field"><label>Название сценария</label><input id="scenarioName" placeholder="Например: Блок 12, север"></div>
+          <div class="field"><label>Диаметр скважины, мм</label><select id="diameter"><option value="">Выберите</option><option>105</option><option>115</option><option>127</option><option>152</option><option>165</option><option>171</option><option>200</option><option>216</option><option>250</option></select></div>
+          <div class="field"><label>Коэффициент крепости</label><input id="fprot" type="number" step="0.1" min="1" placeholder="10"></div>
+          <div class="field"><label>Трещиноватость</label><select id="fracture"><option value="">Выберите</option><option value="0.85">Сильнотрещиноватый</option><option value="1.00">Среднетрещиноватый</option><option value="1.15">Слаботрещиноватый</option><option value="1.30">Монолитный</option></select></div>
+          <div class="field"><label>Плотность породы, т/м³</label><input id="density" type="number" step="0.01" min="1" placeholder="2.70"></div>
+          <div class="field"><label>Высота уступа, м</label><input id="bench" type="number" step="0.1" min="1" placeholder="15"></div>
+          <div class="field"><label>Объем блока, м³</label><input id="volume" type="number" step="1" min="1" placeholder="50000"></div>
+          <div class="field"><label>Обводненность</label><select id="water"><option value="">Выберите</option><option value="dry">Сухие</option><option value="partial">Частично обводненные</option><option value="full">Полностью обводненные</option></select></div>
+          <div class="field"><label>Тип ВВ</label><select id="explosive"><option value="auto">Автовыбор</option><option value="anfo">ANFO</option><option value="rioflex">Rioflex OC</option></select></div>
+          <div class="field"><label>СИ</label><select id="si"><option value="auto">Автовыбор</option><option value="rionel">RIONEL SCX</option><option value="riotronic">RIOTRONIC X</option></select></div>
+          <div class="field"><label>Схема взрывания</label><select id="scheme"><option value="auto">Автовыбор</option><option value="Порядная">Порядная</option><option value="Диагональная">Диагональная</option><option value="Клиновая/диагональная">Клиновая/диагональная</option></select></div>
+          <div class="field"><label>Конструкция заряда</label><select id="chargeType"><option value="solid">Сплошной</option><option value="decked">Рассредоточенный</option></select></div>
+          <div class="field"><label>Целевой X80, мм</label><input id="fragment" type="number" value="200" step="1" min="50"></div>
+          <div class="field"><label>Примечание инженера</label><textarea id="note" placeholder="Особенности блока, направление развала, ограничения"></textarea></div>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" id="calcBtn" type="button">Рассчитать</button>
+          <button class="btn btn-primary" id="saveScenarioBtn" type="button">Сохранить сценарий</button>
+          <button class="btn btn-secondary" id="printBtn" type="button">Печать / PDF</button>
+          <button class="btn btn-secondary" id="saveTxtBtn" type="button">TXT-отчет</button>
+          <button class="btn btn-secondary" id="clearBtn" type="button">Очистить</button>
+        </div>
+      </div>
+
+      <div class="info">Документальная база: ANFO, Rioflex OC, RIONEL SCX, RIOTRONIC X и технологический регламент по организации работ.</div>
+      <div class="hint" id="materialHint">Подсказка по материалам и СИ появится после расчета.</div>
+      <div class="warn">Сценарии хранятся только в текущем сеансе страницы. Для долговременного хранения сохраняйте TXT/PDF-отчеты.</div>
+
+      <div class="section scenario-block">
+        <h3>Журнал сценариев</h3>
+        <div class="scenario-list" id="scenarioList"><div class="scenario"><p>Пока нет сохраненных сценариев.</p></div></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="print-only">
+        <h1>Технический отчет по проекту массового взрыва</h1>
+        <p>Печатная форма инженерного расчета БВР</p>
+      </div>
+      <div class="topbar screen-only">
+        <div>
+          <h2>Расчет и отчет</h2>
+          <div class="sub">Расчетная часть, ключевые метрики и техническое заключение.</div>
+        </div>
+        <div class="badge" id="statusBadge">Ожидание расчета</div>
+      </div>
+      <div class="metrics" id="metrics"></div>
+      <div class="report" id="report">Здесь появится технический отчет по расчету проекта массового взрыва.</div>
+    </main>
+  </div>
+</div>
+<script>
+const el = id => document.getElementById(id);
+const materials={anfo:{name:'ANFO',rho:0.90,rel:1.00,vod:3500,use:'Предпочтительно для сухих скважин',stemming:'буровой шлам или щебень',source:'стандарт организации ANFO'},rioflex:{name:'Rioflex OC',rho:1.49,rel:1.18,vod:5000,use:'Предпочтительно для частично и полностью обводненных скважин',stemming:'буровой шлам или инертный щебень',source:'стандарт организации RIOFLEX OC'}};
+const systems={rionel:{name:'RIONEL SCX',type:'неэлектрическая система инициирования',precision:'стандартная точность',delaySet:[9,17,25,42,67,100],note:'подходит для типовых короткозамедленных схем'},riotronic:{name:'RIOTRONIC X',type:'электронная система инициирования',precision:'высокая точность',delaySet:[9,17,25,42,67,100,450,500,750],note:'подходит для точного управления фронтом взрыва и крупноблочных взрывов'}};
+let scenarios=[];
+function n(v){const x=parseFloat(v);return Number.isFinite(x)?x:null} function r(v,d=2){return Number.isFinite(v)?v.toFixed(d):'-'}
+function pickExplosive(water,manual){if(manual&&manual!=='auto')return materials[manual];return water==='dry'?materials.anfo:materials.rioflex}
+function pickSI(volume,fractureFactor,manual){if(manual&&manual!=='auto')return systems[manual];if(volume>80000||fractureFactor>=1.15)return systems.riotronic;return systems.rionel}
+function nearestDelay(arr,target){return arr.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a,arr[0])}
+function rockFactor(f,fractureFactor){const base=f>=14?11:f>=10?10:f>=7?9:8;return base*fractureFactor}
+function readInput(){return {scenarioName:el('scenarioName').value.trim()||'Без названия',dmm:n(el('diameter').value),f:n(el('fprot').value),fractureFactor:n(el('fracture').value),density:n(el('density').value),H:n(el('bench').value),V:n(el('volume').value),water:el('water').value,explosiveSel:el('explosive').value,siSel:el('si').value,schemeSel:el('scheme').value,chargeType:el('chargeType').value,targetX80:n(el('fragment').value),note:el('note').value.trim()};}
+function compute(){const i=readInput(); if(!i.dmm||!i.f||!i.fractureFactor||!i.density||!i.H||!i.V||!i.water||!i.targetX80) throw new Error('Заполните обязательные поля формы.'); const explosive=pickExplosive(i.water,i.explosiveSel), si=pickSI(i.V,i.fractureFactor,i.siSel), D=i.dmm/1000; let B=30*D; B*=(12/i.f)**0.15; B*=(2.7/i.density)**0.2; B*=(1/i.fractureFactor)**0.35; B*=explosive.name==='Rioflex OC'?0.96:0.92; let S=B*(explosive.name==='Rioflex OC'?1.20:1.25), rowSpacing=B*1.05, subdrill=Math.max(0.2*B,0.3), holeDepth=i.H+subdrill, stemming=Math.min(B*0.72,i.H*0.4), area=S*rowSpacing; let q=explosive.name==='Rioflex OC'?0.78:0.62; q+=0.025*(i.f-8); q+=0.06*(i.fractureFactor-1); q+=0.10*Math.max(0,i.density-2.6); q*=i.targetX80<=200?1.12:1.0; q=Math.max(q,explosive.name==='Rioflex OC'?0.75:0.58); const chargePerMeter=Math.PI*D*D/4*explosive.rho*1000; let chargeMass=q*area*i.H; let chargeLength=chargeMass/chargePerMeter; if(i.chargeType==='decked') chargeMass*=0.95; chargeLength=chargeMass/chargePerMeter; if(chargeLength>holeDepth-0.5){chargeLength=holeDepth-0.5;chargeMass=chargeLength*chargePerMeter;q=chargeMass/(area*i.H)} stemming=holeDepth-chargeLength; const A=rockFactor(i.f,i.fractureFactor), wells0=Math.ceil(i.V/(area*i.H)), uniformity=Math.min(1.85,Math.max(1.15,1.45+(i.fractureFactor-1)*0.25+(S/B-1.1)*0.2)); let x50cm=A*Math.pow((i.V/wells0)/chargeMass,0.8)*Math.pow(115/explosive.rel,0.167); let x80mm=10*x50cm*Math.pow(Math.log(5),1/uniformity), iterations=0; while(x80mm>i.targetX80&&iterations<12){B*=0.97;S*=0.97;rowSpacing*=0.98;q*=1.03;area=S*rowSpacing;chargeMass=q*area*i.H;if(i.chargeType==='decked')chargeMass*=0.95;chargeLength=chargeMass/chargePerMeter;if(chargeLength>holeDepth-0.5){chargeLength=holeDepth-0.5;chargeMass=chargeLength*chargePerMeter;q=chargeMass/(area*i.H)}stemming=holeDepth-chargeLength;x80mm*=0.96;iterations++} const wells=Math.ceil(i.V/(area*i.H)), totalExplosive=wells*chargeMass, drillingMeters=wells*holeDepth; let scheme=i.schemeSel; if(scheme==='auto'){scheme=i.V>80000?'Клиновая/диагональная':(i.fractureFactor>=1.15||i.f>=12?'Диагональная':'Порядная')} const holeDelay=nearestDelay(si.delaySet,scheme==='Порядная'?25:42), rowDelay=nearestDelay(si.delaySet,scheme==='Порядная'?67:100); return {...i,explosive,si,B,S,rowSpacing,subdrill,holeDepth,stemming,chargePerMeter,chargeLength,chargeMass,q,wells,totalExplosive,drillingMeters,x50mm:x50cm*10,x80mm,iterations,holeDelay,rowDelay,scheme,verdict:x80mm<=i.targetX80?'Условие по фрагментации предварительно выполняется.':'Требуется дополнительная оптимизация параметров для достижения целевой фрагментации.'};}
+function buildReport(d){return [`ТЕХНИЧЕСКИЙ ОТЧЕТ ПО ПРОЕКТУ МАССОВОГО ВЗРЫВА`,`Сценарий: ${d.scenarioName}`,'','1. Исходные данные',`- Коэффициент крепости по Протодьяконову: ${r(d.f,1)}`,`- Коэффициент по трещиноватости: ${r(d.fractureFactor,2)}`,`- Плотность породы: ${r(d.density,2)} т/м³`,`- Высота уступа: ${r(d.H,2)} м`,`- Объем взрываемой горной массы: ${r(d.V,0)} м³`,`- Обводненность скважин: ${d.water==='dry'?'сухие':d.water==='partial'?'частично обводненные':'полностью обводненные'}`,`- Диаметр скважины: ${r(d.dmm,0)} мм`,`- Целевой X80: ≤ ${r(d.targetX80,0)} мм`,`- Примечание инженера: ${d.note||'не указано'}`,'','2. Выбранный тип ВВ и СИ',`- ВВ: ${d.explosive.name}`,`- Обоснование выбора ВВ: ${d.explosive.use}`,`- Плотность ВВ: ${r(d.explosive.rho,2)} т/м³`,`- Ориентировочная скорость детонации: ${r(d.explosive.vod,0)} м/с`,`- Система инициирования: ${d.si.name}`,`- Тип СИ: ${d.si.type}`,`- Применяемая конструкция заряда: ${d.chargeType==='decked'?'рассредоточенный':'сплошной колонковый'}`,'','3. Параметры сетки скважин',`- ЛНС: ${r(d.B)} м`,`- Расстояние между скважинами в ряду a: ${r(d.S)} м`,`- Расстояние между рядами b: ${r(d.rowSpacing)} м`,`- Перебур: ${r(d.subdrill)} м`,`- Длина скважины: ${r(d.holeDepth)} м`,`- Длина забойки: ${r(d.stemming)} м`,'','4. Конструкция скважинного заряда',`- Линейная вместимость заряда: ${r(d.chargePerMeter,1)} кг/м`,`- Длина зарядной колонки: ${r(d.chargeLength)} м`,`- Масса заряда на 1 скважину: ${r(d.chargeMass,1)} кг`,`- Материал забойки: ${d.explosive.stemming}`,`- Место установки боевика: донная часть заряда`,'','5. Общие объемы',`- Удельный расход ВВ: ${r(d.q,3)} кг/м³`,`- Количество скважин: ${r(d.wells,0)} шт`,`- Общий расход ВВ: ${r(d.totalExplosive,0)} кг`,`- Погонные метры бурения: ${r(d.drillingMeters,0)} м`,'','6. Оценка фрагментации',`- Расчетный размер x50: ${r(d.x50mm,0)} мм`,`- Прогнозируемый X80: ${r(d.x80mm,0)} мм`,`- Итог: ${d.verdict}`,`- Число итераций оптимизации: ${d.iterations}`,'','7. Схема коммутации и направление взрыва',`- Схема замедления: ${d.scheme}`,`- Интервал между скважинами: ${d.holeDelay} мс`,`- Интервал между рядами: ${d.rowDelay} мс`,`- Доступные интервалы выбранной СИ: ${d.si.delaySet.join(', ')} мс`,`- Направление взрыва: от свободной поверхности в глубину блока, с обеспечением управляемого развала`,'','8. Инженерская ремарка',`- Источник свойств ВВ: ${d.explosive.source}`,'- Для окончательного паспорта БВР требуется инженерная верификация по фактическим условиям блока и ограничениям по безопасности.'].join('\n');}
+function render(){try{const d=compute(); const text=buildReport(d); el('materialHint').textContent=`Выбрано ВВ: ${d.explosive.name}. Выбрана СИ: ${d.si.name} — ${d.si.type}, ${d.si.precision}.`; el('statusBadge').textContent=d.x80mm<=d.targetX80?'Расчет OK':'Нужна оптимизация'; el('metrics').innerHTML=`<div class='metric'><div class='k'>ЛНС</div><div class='v'>${r(d.B)} м</div></div><div class='metric'><div class='k'>Сетка</div><div class='v'>${r(d.S)} × ${r(d.rowSpacing)} м</div></div><div class='metric'><div class='k'>Удельный расход</div><div class='v'>${r(d.q,3)} кг/м³</div></div><div class='metric'><div class='k'>X80</div><div class='v'>${r(d.x80mm,0)} мм</div></div><div class='metric'><div class='k'>Скважин</div><div class='v'>${r(d.wells,0)} шт</div></div><div class='metric'><div class='k'>ВВ общее</div><div class='v'>${r(d.totalExplosive,0)} кг</div></div>`; el('report').textContent=text; return d;}catch(e){el('statusBadge').textContent='Ошибка'; el('metrics').innerHTML=''; el('materialHint').textContent='Подсказка по материалам и СИ появится после расчета.'; el('report').textContent='Ошибка: '+e.message; return null;}}
+function saveScenario(){ const d=render(); if(!d) return; scenarios.unshift({name:d.scenarioName,date:new Date().toLocaleString('ru-RU'),x80:r(d.x80mm,0),grid:`${r(d.S)} × ${r(d.rowSpacing)}`,explosive:d.explosive.name,si:d.si.name,report:buildReport(d)}); if(scenarios.length>8) scenarios.pop(); drawScenarios(); }
+function drawScenarios(){ const box=el('scenarioList'); if(!scenarios.length){box.innerHTML='<div class="scenario"><p>Пока нет сохраненных сценариев.</p></div>'; return;} box.innerHTML=scenarios.map((s,idx)=>`<div class='scenario'><h4>${s.name}</h4><p>${s.date}</p><p>X80: ${s.x80} мм; сетка: ${s.grid}; ВВ: ${s.explosive}; СИ: ${s.si}</p><div class='row'><button class='mini-btn' onclick='loadScenario(${idx})'>Показать отчет</button><button class='mini-btn' onclick='downloadScenario(${idx})'>TXT</button><button class='mini-btn' onclick='removeScenario(${idx})'>Удалить</button></div></div>`).join(''); }
+window.loadScenario=function(idx){ el('report').textContent=scenarios[idx].report; el('statusBadge').textContent='Сценарий из журнала'; }
+window.downloadScenario=function(idx){ const blob=new Blob([scenarios[idx].report],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${scenarios[idx].name.replace(/[^a-zA-Zа-яА-Я0-9-_]+/g,'_')}.txt`; a.click(); URL.revokeObjectURL(a.href); }
+window.removeScenario=function(idx){ scenarios.splice(idx,1); drawScenarios(); }
+function downloadCurrent(){ if(el('report').textContent.includes('Здесь появится')||el('report').textContent.startsWith('Ошибка')){ const d=render(); if(!d) return; } const blob=new Blob([el('report').textContent],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='otchet-bvr.txt'; a.click(); URL.revokeObjectURL(a.href); }
+function printReport(){ if(el('report').textContent.includes('Здесь появится')||el('report').textContent.startsWith('Ошибка')){ const d=render(); if(!d) return; } const txt=el('report').textContent.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); const w=window.open('', '_blank', 'width=900,height=700'); if(!w){ alert('Браузер заблокировал окно печати. Разрешите всплывающее окно и повторите.'); return; } w.document.open(); w.document.write('<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>Отчет БВР</title><style>body{font-family:Arial,sans-serif;color:#111827;margin:24px;line-height:1.5;background:#fff}h1{font-size:22px;margin:0 0 12px 0}pre{white-space:pre-wrap;font-family:"Courier New",monospace;font-size:13px;line-height:1.55;color:#111827;background:#fff;border:1px solid #94a3b8;padding:16px;border-radius:8px}@page{size:auto;margin:12mm}</style></head><body><h1>Технический отчет по проекту массового взрыва</h1><pre>'+txt+'</pre></body></html>'); w.document.close(); w.focus(); setTimeout(function(){ w.print(); }, 400); }
+function clearForm(){ ['scenarioName','fprot','density','bench','volume','note'].forEach(id=>el(id).value=''); ['diameter','fracture','water','explosive','si','scheme'].forEach(id=>el(id).selectedIndex=0); el('chargeType').value='solid'; el('fragment').value=200; el('metrics').innerHTML=''; el('report').textContent='Здесь появится технический отчет по расчету проекта массового взрыва.'; el('materialHint').textContent='Подсказка по материалам и СИ появится после расчета.'; el('statusBadge').textContent='Ожидание расчета'; }
+el('calcBtn').addEventListener('click',render); el('saveScenarioBtn').addEventListener('click',saveScenario); el('printBtn').addEventListener('click',printReport); el('saveTxtBtn').addEventListener('click',downloadCurrent); el('clearBtn').addEventListener('click',clearForm);
+</script>
+</body>
+</html>
